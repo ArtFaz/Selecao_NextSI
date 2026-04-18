@@ -1,0 +1,25 @@
+{
+    "name": "art/selecao_next-si",
+    "description": "API de autenticação e CRUD de usuários para o case da NextSI",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Art\\SelecaoNextSi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ArtFaz",
+            "email": "arthur.fazioni@hotmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "4.*",
+        "slim/psr7": "^1.8",
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.1",
+        "firebase/php-jwt": "^7.0",
+        "zircote/swagger-php": "^6.1",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
