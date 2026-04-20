@@ -5,6 +5,7 @@ namespace Art\SelecaoNextSi\Config;
 
 use PDO;
 use PDOException;
+use RuntimeException;
 
 class Database {
     // Armazena a instância única da conexão
@@ -13,12 +14,12 @@ class Database {
     public static function getConnection(): PDO {
         // Se a conexão já existir, devolve ela. Se não, cria uma nova
         if (self::$connection === null) {
-            
-            $host = $_ENV['DB_HOST'] ?? 'mysql';
-            $port = $_ENV['DB_PORT'] ?? '3306';
-            $db   = $_ENV['DB_DATABASE'] ?? 'nextsi_auth';
-            $user = $_ENV['DB_USER'] ?? 'nextsi_user';
-            $pass = $_ENV['DB_PASSWORD'] ?? 'nextsi_password';
+
+            $host = self::env('DB_HOST', 'mysql');
+            $port = self::env('DB_PORT', '3306');
+            $db   = self::env('DB_DATABASE', 'nextsi_auth');
+            $user = self::env('DB_USER', 'nextsi_user');
+            $pass = self::env('DB_PASSWORD', 'nextsi_password');
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
 
@@ -32,12 +33,28 @@ class Database {
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]);
             } catch (PDOException $e) {
-                die(json_encode([
-                    'error' => 'Falha crítica na conexão com o banco de dados.'
-                ]));
+                throw new RuntimeException('Falha crítica na conexão com o banco de dados.', 0, $e);
             }
         }
 
         return self::$connection;
+    }
+
+    private static function env(string $key, string $default): string
+    {
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            return (string) $_ENV[$key];
+        }
+
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            return (string) $_SERVER[$key];
+        }
+
+        $value = getenv($key);
+        if ($value !== false && $value !== '') {
+            return (string) $value;
+        }
+
+        return $default;
     }
 }
