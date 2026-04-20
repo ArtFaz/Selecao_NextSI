@@ -7,19 +7,31 @@ require __DIR__ . '/../vendor/autoload.php';
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Art\SelecaoNextSi\Config\Database;
 
 $app = AppFactory::create();
 
+// Middleware de erro (false em prod)
 $app->addErrorMiddleware(true, true, true);
 
 /**
  * Healthcheck
- * Endpoint básico para monitoramento e validação de disponibilidade da API.
+ * Endpoint básico para monitoramento e validação de disponibilidade da API e do Banco.
  */
 $app->get('/ping', function (Request $request, Response $response): Response {
+    $dbStatus = 'offline';
+    
+    try {
+        $db = Database::getConnection();
+        $dbStatus = 'API e banco de dados funcionais';
+    } catch (\Exception $e) {
+        $dbStatus = 'API funcionando, mas conexão ao banco falhou';
+    }
+
     $payload = json_encode([
-        'status' => 'online',
-        'timestamp' => date('c') // Retorna no formato ISO 8601
+        'api_status' => 'online',
+        'db_status'  => $dbStatus,
+        'timestamp'  => date('c')
     ]);
     
     $response->getBody()->write($payload);
