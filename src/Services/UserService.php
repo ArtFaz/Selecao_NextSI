@@ -46,6 +46,14 @@ class UserService
             throw new Exception('Formato de e-mail inválido.', 422);
         }
 
+        if (!is_scalar($data['document'])) {
+            throw new Exception('O campo document deve ser um valor textual válido.', 422);
+        }
+        $data['document'] = trim((string) $data['document']);
+        if ($data['document'] === '') {
+            throw new Exception('O campo obrigatório document está ausente ou vazio.', 422);
+        }
+
         // 2. Validar e limpar o documento
         if (!DocumentValidator::isValid($data['document'])) {
             throw new Exception("O documento (CPF/CNPJ) fornecido é inválido.", 422);
@@ -184,6 +192,8 @@ class UserService
             static fn($value, $key) => $value !== null || $key === 'phone',
             ARRAY_FILTER_USE_BOTH
         );
+
+        unset($currentUser['created_at'], $currentUser['updated_at']);
 
         $updateData = array_merge(
             $currentUser,

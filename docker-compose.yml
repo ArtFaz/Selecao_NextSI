@@ -33,7 +33,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-nextsi_auth}
       DB_USER: ${DB_USER:-nextsi_user}
       DB_PASSWORD: ${DB_PASSWORD:-nextsi_password}
-      JWT_SECRET: ${JWT_SECRET:-nextsi_chave_dev}
+      JWT_SECRET: ${JWT_SECRET:-nextsi_chave_dev_secreta_de_256bits}
       JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-7200}
     healthcheck:
       test: ["CMD-SHELL", "php-fpm -t || exit 1"]

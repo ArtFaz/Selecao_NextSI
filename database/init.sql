@@ -12,3 +12,13 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO users (name, email, password, document, profile) 
+VALUES (
+    'Administrador', 
+    'admin@nextsi.com.br', 
+    '$2y$12$K5.Q0Oj4Hj7aSoaTtUhSxes1RqqUo864KnS2FJ56T8djDFO4FZnqG', 
+    '70837980011', 
+    'admin'
+);
