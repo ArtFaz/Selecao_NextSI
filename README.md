@@ -166,6 +166,11 @@ Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
+Observacao sobre a primeira execucao em maquina limpa:
+- O servico app instala automaticamente as dependencias do Composer caso o diretório vendor ainda nao exista.
+- Por isso, o primeiro startup pode levar mais tempo.
+- Nao e necessario executar manualmente `docker compose exec app composer install`.
+
 3. Validar status:
 ```
 docker compose ps

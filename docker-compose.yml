@@ -23,7 +23,7 @@ services:
     container_name: nextsi-app
     restart: always
     command: >
-      sh -c "php /var/www/html/Scripts/generate-docs.php || true; php-fpm"
+      sh -c "if [ ! -f /var/www/html/vendor/autoload.php ]; then composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist; fi; php /var/www/html/Scripts/generate-docs.php || true; php-fpm"
     volumes:
       - .:/var/www/html
     depends_on:
