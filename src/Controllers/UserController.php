@@ -7,6 +7,7 @@ use Art\SelecaoNextSi\Services\UserService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Throwable;
+use OpenApi\Attributes as OA;
 
 class UserController
 {
@@ -17,6 +18,21 @@ class UserController
         $this->userService = $userService;
     }
 
+    #[OA\Get(
+        path: "/users",
+        summary: "Lista todos os usuários (Paginado)",
+        security: [["bearerAuth" => []]],
+        tags: ["Usuários"],
+        parameters: [
+            new OA\Parameter(name: "limit", in: "query", required: false, description: "Limite de resultados", schema: new OA\Schema(type: "integer", default: 50)),
+            new OA\Parameter(name: "offset", in: "query", required: false, description: "Pular X resultados", schema: new OA\Schema(type: "integer", default: 0))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Lista de usuários retornada com sucesso"),
+            new OA\Response(response: 401, description: "Não autorizado (Token ausente ou inválido)"),
+            new OA\Response(response: 422, description: "Parâmetros de paginação inválidos")
+        ]
+    )]
     public function index(Request $request, Response $response): Response
     {
         try {
@@ -48,6 +64,20 @@ class UserController
         }
     }
 
+    #[OA\Get(
+        path: "/users/{id}",
+        summary: "Busca um usuário específico pelo ID",
+        security: [["bearerAuth" => []]],
+        tags: ["Usuários"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "ID do usuário", schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Dados do usuário"),
+            new OA\Response(response: 401, description: "Não autorizado"),
+            new OA\Response(response: 404, description: "Usuário não encontrado")
+        ]
+    )]
     public function show(Request $request, Response $response, array $args): Response
     {
         try {
@@ -60,6 +90,34 @@ class UserController
         }
     }
 
+    #[OA\Post(
+        path: "/users",
+        summary: "Cria um novo usuário (Apenas Admin)",
+        security: [["bearerAuth" => []]],
+        tags: ["Usuários"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["name", "email", "password", "document"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Maria Teste"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "maria@teste.com"),
+                    new OA\Property(property: "password", type: "string", example: "senha_forte"),
+                    new OA\Property(property: "document", type: "string", example: "01001205553"),
+                    new OA\Property(property: "phone", type: "string", example: "14999999999"),
+                    new OA\Property(property: "profile", type: "string", enum: ["admin", "user"], example: "user")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Usuário criado com sucesso"),
+            new OA\Response(response: 400, description: "Payload inválido ou não formatado como JSON"),
+            new OA\Response(response: 401, description: "Não autorizado"),
+            new OA\Response(response: 403, description: "Acesso negado (Não é admin)"),
+            new OA\Response(response: 409, description: "E-mail ou Documento já existem"),
+            new OA\Response(response: 422, description: "Erro de validação (campos obrigatórios, CPF/CNPJ inválido)")
+        ]
+    )]
     public function create(Request $request, Response $response): Response
     {
         try {
@@ -80,6 +138,36 @@ class UserController
         }
     }
 
+    #[OA\Put(
+        path: "/users/{id}",
+        summary: "Atualiza um usuário existente (Apenas Admin)",
+        security: [["bearerAuth" => []]],
+        tags: ["Usuários"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Maria Editada"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "maria.nova@teste.com"),
+                    new OA\Property(property: "password", type: "string", example: "nova_senha_forte"),
+                    new OA\Property(property: "phone", type: "string", nullable: true, example: null),
+                    new OA\Property(property: "profile", type: "string", enum: ["admin", "user"], example: "admin")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Usuário atualizado com sucesso"),
+            new OA\Response(response: 400, description: "Payload inválido ou não formatado como JSON"),
+            new OA\Response(response: 401, description: "Não autorizado"),
+            new OA\Response(response: 403, description: "Acesso negado (Não é admin)"),
+            new OA\Response(response: 404, description: "Usuário não encontrado"),
+            new OA\Response(response: 409, description: "E-mail já está em uso por outra conta"),
+            new OA\Response(response: 422, description: "Erro de validação nos campos enviados")
+        ]
+    )]
     public function update(Request $request, Response $response, array $args): Response
     {
         try {
@@ -98,6 +186,21 @@ class UserController
         }
     }
 
+    #[OA\Delete(
+        path: "/users/{id}",
+        summary: "Deleta um usuário (Apenas Admin)",
+        security: [["bearerAuth" => []]],
+        tags: ["Usuários"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Usuário deletado com sucesso"),
+            new OA\Response(response: 401, description: "Não autorizado"),
+            new OA\Response(response: 403, description: "Acesso negado (Não é admin)"),
+            new OA\Response(response: 404, description: "Usuário não encontrado")
+        ]
+    )]
     public function delete(Request $request, Response $response, array $args): Response
     {
         try {

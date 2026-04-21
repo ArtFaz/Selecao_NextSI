@@ -83,6 +83,58 @@ $app->group('/users', function (\Slim\Routing\RouteCollectorProxy $group) use ($
 
 })->add($authMiddleware); // Aplica a verificação de token (AuthMiddleware) em todo o grupo /users
 
+// 5. Endpoint do OpenAPI JSON (fallback para quando o arquivo não existir)
+$app->get('/openapi.json', function (Request $request, Response $response): Response {
+    $path = __DIR__ . '/openapi.json';
 
-// 5. Roda a aplicação
+    if (!file_exists($path)) {
+        $payload = json_encode([
+            'error' => 'Documentação não gerada. Execute php Scripts/generate-docs.php.'
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        $response->getBody()->write($payload !== false ? $payload : '{"error":"Documentação não gerada."}');
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+    }
+
+    $content = file_get_contents($path);
+    if ($content === false) {
+        $response->getBody()->write('{"error":"Falha ao ler a documentação OpenAPI."}');
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+    }
+
+    $response->getBody()->write($content);
+    return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+});
+
+// 6. Swagger UI
+$app->get('/docs', function (Request $request, Response $response): Response {
+    $html = <<<HTML
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Swagger UI - NextSI</title>
+        <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
+        <script>
+            window.onload = () => {
+                window.ui = SwaggerUIBundle({
+                    url: '/openapi.json', // Aponta para o JSON gerado
+                    dom_id: '#swagger-ui',
+                });
+            };
+        </script>
+    </body>
+    </html>
+    HTML;
+
+    $response->getBody()->write($html);
+    return $response->withHeader('Content-Type', 'text/html');
+});
+
+
+// 7. Roda a aplicação
 $app->run();

@@ -7,6 +7,7 @@ use Art\SelecaoNextSi\Services\AuthService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Throwable;
+use OpenApi\Attributes as OA;
 
 class AuthController
 {
@@ -17,6 +18,36 @@ class AuthController
         $this->authService = $authService;
     }
 
+    #[OA\Post(
+        path: "/auth/login",
+        summary: "Autenticação de Usuário",
+        tags: ["Autenticação"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "password"],
+                properties: [
+                    new OA\Property(property: "email", type: "string", format: "email", example: "admin@nextsi.com.br"),
+                    new OA\Property(property: "password", type: "string", example: "password")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200, 
+                description: "Login bem-sucedido, retorna o JWT",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "token", type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: "Payload inválido ou não formatado como JSON"),
+            new OA\Response(response: 401, description: "Credenciais inválidas"),
+            new OA\Response(response: 422, description: "E-mail ou senha ausentes ou com formato inválido"),
+            new OA\Response(response: 500, description: "Erro interno do servidor")
+        ]
+    )]
     public function login(Request $request, Response $response): Response
     {
         try {

@@ -22,3 +22,5 @@ VALUES (
     '70837980011', 
     'admin'
 );
+
+-- A senha acima é "Admin@123".
