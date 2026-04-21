@@ -28,7 +28,7 @@ class AuthController
                 required: ["email", "password"],
                 properties: [
                     new OA\Property(property: "email", type: "string", format: "email", example: "admin@nextsi.com.br"),
-                    new OA\Property(property: "password", type: "string", example: "password")
+                    new OA\Property(property: "password", type: "string", example: "Admin@123")
                 ]
             )
         ),
